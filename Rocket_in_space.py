@@ -73,8 +73,9 @@ import sys
 from rocket import Shuttle
 from settings import Settings
 from bullets import Bullets
+from alien import Alien
 
-class Empty:
+class Shuttle_in_space:
     def __init__(self):
         pygame.init()
         self.settings = Settings()
@@ -85,13 +86,16 @@ class Empty:
         self.shuttle = Shuttle(self)
         pygame.display.set_caption("Hello!")
         self.bullets = pygame.sprite.Group()
+        self.aliens = pygame.sprite.Group()
+        self._create_aliens()
 
     def run_game(self): 
         while True:
             self.check_events()
             self.shuttle.update()
-            self.update_bullets()
-            self.update_screen()
+            self._update_bullets()
+            self._update_aliens()
+            self._update_screen()
 
     def check_events(self):
         for event in pygame.event.get():
@@ -137,24 +141,69 @@ class Empty:
         new_bullet = Bullets(self)
         self.bullets.add(new_bullet)
     
-    def update_bullets(self):
+    def _update_bullets(self):
             self.bullets.update()
             for bullet in self.bullets.copy():
                 if bullet.rect.left >= self.shuttle.screen_rect.right:
                     self.bullets.remove(bullet)
-                print(len(self.bullets))
-
-
+                # print(len(self.bullets))
+            self.check_bullet_alien_collision()
         
-    def update_screen(self):
+    def check_bullet_alien_collision(self):
+        collisions = pygame.sprite.groupcollide(
+            self.bullets, self.aliens,  False, True)
+        if not self.aliens:
+            self.bullets.empty()
+            self._create_aliens()
+    
+    def _update_aliens(self):
+        self._check_aliens_edges()
+        self.aliens.update()
+
+
+    def _create_aliens(self):
+        alien = Alien(self)
+        alien_width, alien_height = alien.rect.size
+        shuttle_width = self.shuttle.rect.width
+        available_space_x = self.settings.screen_width - (3 * alien_width) - shuttle_width
+        rows_number = available_space_x // (2 * alien_width)
+        available_space_y = self.settings.screen_height - (2 * alien_height)
+        aliens_number = available_space_y // (2 * alien_height)
+        for row_number in range(rows_number):
+            for alien_number in range(aliens_number):
+                self._create_alien(alien_number, row_number)
+        
+    def _create_alien(self, al_n, row_n):
+        alien = Alien(self)
+        alien_width, alien_height = alien.rect.size
+        alien.x = self.settings.screen_width - alien_width - 2 * alien_width * row_n
+        alien.rect.x = alien.x
+        alien.y = alien_height + 2 * alien_height * al_n
+        alien.rect.y = alien.y
+        self.aliens.add(alien)
+        
+    def _check_aliens_edges(self): 
+        for alien in self.aliens.sprites():
+            if alien.check_edges():
+                self._change_aliens_direction()
+                break
+    
+
+    def _change_aliens_direction(self):
+        for alien in self.aliens.sprites():
+            alien.rect.x -= self.settings.drop_speed
+        self.settings.aliens_direction *= -1
+
+    def _update_screen(self):
         self.screen.fill(self.settings.bg_color)
         self.shuttle.blit_shuttle()
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
+        self.aliens.draw(self.screen)
         pygame.display.flip()
 
 if __name__ == "__main__":
-    shut = Empty()
+    shut = Shuttle_in_space()
     shut.run_game()       
 
     
