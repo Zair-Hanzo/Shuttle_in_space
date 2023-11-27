@@ -17,6 +17,10 @@ class Settings:
         self.bullet_height = 3
         self.bullet_speed = 2.5
         self.bullet_allowed = 5
-        self.alien_speed = 1.35
+        self.alien_speed = 1.8
         self.aliens_direction = 1
         self.drop_speed = 10
+        self.ship_limit = 3
+        self.rects_speed = 3
+        self.rects_direction = 1
+        self.rects_drop_speed = 3

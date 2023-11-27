@@ -85,5 +85,9 @@ class Shuttle:
     def blit_shuttle(self):
         self.screen.blit(self.image, self.rect)
 
-
+    def center_shuttle(self):
+        self.rect.centery = self.screen_rect.centery
+        self.rect.midleft = self.screen_rect.midleft
+        self.x = float(self.rect.x)
+        self.y = float(self.rect.y)
 
